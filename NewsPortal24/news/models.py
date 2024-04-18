@@ -26,6 +26,20 @@ class Post(models.Model):
     text_post = models.TextField()
     post_rating = models.IntegerField(default= 0)
 
+    def update_rating(self):
+        pass
+    def like(self):
+        self.post_rating += 1
+        self.save()
+
+    def dislike(self):
+        self.post_rating -= 1
+        self.save()
+
+    def preview(self):
+        return f'{self.text_post[0:123]}...'
+
+
 class PostCategory(models.Model):
     post_through = models.ForeignKey(Post, on_delete=models.CASCADE)
     category_through = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -36,5 +50,13 @@ class Comment(models.Model):
     text_comment = models.TextField()
     time_in = models.DateTimeField(auto_now_add= True)
     comment_rating = models.IntegerField(default= 0)
+
+    def like(self):
+        self.comment_rating += 1
+        self.save()
+
+    def dislike(self):
+        self.comment_rating -= 1
+        self.save()
 
 
