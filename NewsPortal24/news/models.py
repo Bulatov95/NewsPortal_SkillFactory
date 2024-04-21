@@ -1,14 +1,28 @@
 from django.contrib.auth.models import User
 from django.db import models
-
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
 
 class Author(models.Model):
     author_user = models.OneToOneField(User, on_delete= models.CASCADE)
     author_rating = models.IntegerField(default=0)
 
+    def update_rating(self):
+        # Изначально мы получаем QuerySet со всеми постами автора, агрегируем их, суммируя райтинг постов и получаем словарь
+        # {'par3' : ЗНАЧЕНИЕ суммы рейтингов} и обращаемся к нему по ключу (Если бы мы не задали название ключа в aggregate,
+        # то оно бы было стандартное для поля с рейтингоv в классе Post). Функция Coalesce нужна для замены None на 0, если
+        # у нас отсутствуют статьи автора комментарии к ним и его комментарии, чтобы не получать ошибку при сложении в конечном выражении.
+        post_author_rating3 = Post.objects.filter(post_author = self).aggregate(par3 =Coalesce(Sum('post_rating'), 0))['par3']
+        comment_author_rating = Comment.objects.filter(user_comment =self.author_user).aggregate(car =Coalesce(Sum('comment_rating'), 0))['car']
+        post_comment_rating = Comment.objects.filter(post__post_author = self).aggregate(pcr = Coalesce(Sum('comment_rating'), 0))['pcr']
+
+        self.author_rating = 3 * post_author_rating3 + comment_author_rating + post_comment_rating
+        self.save()
+
+
 class Category(models.Model):
-    name = models.CharField(max_length= 255, unique= True)
+    name = models.CharField(max_length=255, unique=True)
 
 
 class Post(models.Model):
@@ -18,16 +32,14 @@ class Post(models.Model):
         (news, 'Новость'),
         (article, 'Статья'),
     )
-    post_author = models.ForeignKey(Author, on_delete= models.CASCADE)
+    post_author = models.ForeignKey(Author, on_delete=models.CASCADE)
     nw_ar = models.CharField(max_length=2, choices=CATEGORY, default=news)
-    time_in = models.DateTimeField(auto_now_add= True)
-    category = models.ManyToManyField(Category, through= 'PostCategory')
-    tittle = models.CharField(max_length= 255)
+    time_in = models.DateTimeField(auto_now_add=True)
+    category = models.ManyToManyField(Category, through='PostCategory')
+    tittle = models.CharField(max_length=255)
     text_post = models.TextField()
-    post_rating = models.IntegerField(default= 0)
+    post_rating = models.IntegerField(default=0)
 
-    def update_rating(self):
-        pass
     def like(self):
         self.post_rating += 1
         self.save()
@@ -44,12 +56,13 @@ class PostCategory(models.Model):
     post_through = models.ForeignKey(Post, on_delete=models.CASCADE)
     category_through = models.ForeignKey(Category, on_delete=models.CASCADE)
 
+
 class Comment(models.Model):
-    post_comment = models.ForeignKey(Post, on_delete= models.CASCADE)
-    user_comment = models.ForeignKey(User, on_delete= models.CASCADE)
+    post_comment = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user_comment = models.ForeignKey(User, on_delete=models.CASCADE)
     text_comment = models.TextField()
-    time_in = models.DateTimeField(auto_now_add= True)
-    comment_rating = models.IntegerField(default= 0)
+    time_in = models.DateTimeField(auto_now_add=True)
+    comment_rating = models.IntegerField(default=0)
 
     def like(self):
         self.comment_rating += 1
@@ -58,5 +71,3 @@ class Comment(models.Model):
     def dislike(self):
         self.comment_rating -= 1
         self.save()
-
-
