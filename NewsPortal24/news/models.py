@@ -40,8 +40,8 @@ class Post(models.Model):
     text_post = models.TextField()
     post_rating = models.IntegerField(default=0)
 
-    def __str__(self):
-        return f'{self.tittle[:20]}: {self.post_author}'
+    # def __str__(self):
+    #     return f'{self.tittle[:20]}: {self.post_author}'
 
     def like(self):
         self.post_rating += 1

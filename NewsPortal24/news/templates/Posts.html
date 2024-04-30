@@ -8,6 +8,26 @@ Posts
 
 <!-- В контенте на странице мы выводим все товары -->
 {% block content %}
-<h1>Все новости</h1>
-{{ posts }}
+    <h1>Все новости</h1>
+<h2>Количество новостей: {{ news_count }}</h2>
+    <hr>
+    {% if posts %}
+       <table>
+           <tr>
+               <td>Заголовок</td>
+               <td>Дата публикации</td>
+               <td>Краткое содержание</td>
+           </tr>
+
+           {% for news in posts %}
+           <tr>
+               <td>{{ news.tittle|truncatewords:5 }}</td>
+               <td>{{ news.time_in|date:'d m Y' }}</td>
+               <td>{{ news.text_post|truncatewords:20 }}</td>
+           </tr>
+           {% endfor %}
+       </table>
+   {% else %}
+       <h2>Новостей нет!</h2>
+   {% endif %}
 {% endblock content %}
