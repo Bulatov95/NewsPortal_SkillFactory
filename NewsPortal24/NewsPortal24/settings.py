@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'news',
     'accounts',
+    'django_filters',
 
     # подключаем flatpages
     'django.contrib.sites',
