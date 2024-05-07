@@ -1,8 +1,12 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import (
-    ListView, DetailView, CreateView, UpdateView, DeleteView
+    ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView,
 )
+from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
 
 from .filters import PostFilter
 from .forms import PostForm
@@ -50,7 +54,8 @@ class PostDetail(DetailView):
     template_name = 'Post.html'
     context_object_name = 'post'
 
-class PostCreate(CreateView):
+class PostCreate(PermissionRequiredMixin, CreateView,):
+    permission_required = ('news.add_post',)
     form_class = PostForm
     model = Post
     template_name = 'Post_create.html'
@@ -76,17 +81,37 @@ class PostCreate(CreateView):
         else:
             return {'title': 'Create News', 'header': 'Добавить новость'}
 
-class PostEdit(UpdateView):
+class PostEdit(PermissionRequiredMixin, UpdateView,):
+    raise_exception = True
+    permission_required = ('news.change_post',)
     form_class = PostForm
     model = Post
     template_name = 'Post_create.html'
     success_url = reverse_lazy('posts')
 
 
-class PostDelete(DeleteView):
+class PostDelete(PermissionRequiredMixin, DeleteView,):
+    raise_exception = True
+    permission_required = ('news.delete_post',)
     model = Post
     template_name = 'Post_delete.html'
     success_url = reverse_lazy('posts')
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'Profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_author'] = self.request.user.groups.filter(name='author').exists()
+        return context
+
+@login_required
+def upgrade_me(request):
+    user = request.user
+    authors_group = Group.objects.get(name='author')
+    if not request.user.groups.filter(name='author').exists():
+        authors_group.user_set.add(user)
+    return redirect('/News/profile/')
 
 
 

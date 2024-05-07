@@ -1,2 +1,7 @@
 login: admin
 password: 123
+
+Обычный пользователь:
+
+mail: foo@bar.ru
+password: foobar12

@@ -44,7 +44,15 @@ INSTALLED_APPS = [
     # подключаем flatpages
     'django.contrib.sites',
     'django.contrib.flatpages',
+
+    # В данный раздел добавьте 3 обязательных приложения allauth
+    # и одно, которое отвечает за выход через Yandex
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.yandex',
 ]
+
 
 SITE_ID = 1
 
@@ -58,6 +66,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'NewsPortal24.urls'
@@ -79,6 +88,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'NewsPortal24.wsgi.application'
+
+AUTHENTICATION_BACKENDS = [
+    # реализующий аутентификацию по username
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 
 # Database
@@ -136,3 +153,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATICFILES_DIRS = [
     BASE_DIR / "static"
 ]
+
+# Первые два параметра указывают на то, что поле email является обязательным и уникальным.
+# Третий, наоборот, — говорит, что username необязательный. Следующий параметр указывает,
+# что аутентификация будет происходить посредством электронной почты.
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+ACCOUNT_FORMS = {'signup': 'news.forms.CommonSignupForm'}
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/News/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
