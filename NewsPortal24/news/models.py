@@ -80,3 +80,7 @@ class Comment(models.Model):
     def dislike(self):
         self.comment_rating -= 1
         self.save()
+
+class Subscriber(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions',)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subscriptions',)
